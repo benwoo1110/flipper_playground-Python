@@ -1,6 +1,7 @@
 from enum import IntEnum
 import os
 import sys
+import time
 from typing import Union
 from typing_extensions import Literal, SupportsIndex
 
@@ -46,8 +47,8 @@ class InputType(IntEnum):
 
 class InputData:
     def __init__(self, key: int, key_type: int):
-        self.key = InputKey(key)
-        self.key_type = InputType(key_type)
+        self.key: InputKey = InputKey(key)
+        self.key_type: InputType = InputType(key_type)
     
     def __str__(self):
         return f"InputData(key={self.key}, key_type={self.key_type})"
@@ -83,8 +84,9 @@ class Canvas:
 class Flipper:
     def __init__(self):
         self.serial = None
-        self.input_callback_func = None
         self.running = False
+        self.input_callback_func = None
+        self.draw_callback_func = None
 
     def open_serial(self, port=None, timeout=None) -> serial.Serial:
         serial_port = port or self._find_port()
@@ -129,10 +131,10 @@ class Flipper:
     def send(self, id: ProtoID, data: bytes = b''):
         self.serial.write(payload_e(id, data))
 
-    def close(self):
+    def send_close(self):
         self.send(ProtoID.CNT_PYTHON_STOP_ID)
 
-    def draw(self, canvas: Canvas):
+    def send_draw(self, canvas: Canvas):
         self.send(ProtoID.GUI_DRAW_ID, canvas.compile_draw_data())
 
     def input_callback(self):
@@ -140,6 +142,17 @@ class Flipper:
             self.input_callback_func = func
             return func
         return decorator
+    
+    def draw_callback(self):
+        def decorator(func):
+            self.draw_callback_func = func
+            return func
+        return decorator
+
+    def update_view(self):
+        canvas = Canvas()
+        self.draw_callback_func(canvas)
+        self.send_draw(canvas)
 
     def event_loop(self):
         if self.running:
@@ -162,6 +175,9 @@ class Flipper:
             print("failed to start")
             sys.exit(0)
         
+        time.sleep(0.1)
+        self.update_view()
+
         print("started!")
 
         while self.running:
