@@ -1,6 +1,6 @@
 from random import randint
 
-from flipper import Flipper, Canvas, InputData, InputKey, InputType
+from flipper import Align, Canvas, Flipper, InputData, InputKey, InputType
 
 box_x = 10
 box_y = 10
@@ -12,7 +12,7 @@ flipper.open_serial()
 def input_callback(data: InputData):
     global box_x, box_y
 
-    print(data)
+    #print(data)
     if data.key_type != InputType.Short and data.key_type != InputType.Repeat:
         return
     
@@ -26,12 +26,12 @@ def input_callback(data: InputData):
         box_x += 1
 
     canvas = Canvas()
-    canvas.draw_str(64, 10, f'{data.key.name}')
-    canvas.draw_str(64, 20, f'{data.key_type.name}')
-    for i in range(8, 21, 2):
-        canvas.draw_frame(box_x, box_y, i, i)
-    print(canvas.draw_count)
-    print(canvas.draw_data)
+    canvas.draw_str_align(120, 10, Align.Right, Align.Center, data.key.name)
+    canvas.draw_str_align(120, 20, Align.Right, Align.Center, data.key_type.name)
+    for i in range(8, 31, 2):
+        canvas.draw_rframe(box_x, box_y, i, i, 2)
+    # print(canvas.draw_count)
+    # print(canvas.draw_data)
     flipper.draw(canvas)
 
 flipper.event_loop()
