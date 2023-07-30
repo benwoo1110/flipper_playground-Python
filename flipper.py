@@ -7,7 +7,7 @@ from typing import Union
 from serial import Serial
 from serial.tools import list_ports
 
-from protocol import ProtoID, int8_e, int16_e,payload_e, str_e
+from protocol import ProtoID, float32_e, int8_e, int16_e, payload_e, str_e
 
 
 class Align(IntEnum):
@@ -41,7 +41,7 @@ class InputData:
     def __init__(self, key: int, key_type: int):
         self.key: InputKey = InputKey(key)
         self.key_type: InputType = InputType(key_type)
-    
+
     def __str__(self):
         return f"InputData(key={self.key}, key_type={self.key_type})"
 
@@ -69,7 +69,7 @@ class Canvas:
     def draw_rframe(self, x, y, width, height, radius):
         draw_rframe_data = int8_e(x) + int8_e(y) + int8_e(width) + int8_e(height) + int8_e(radius)
         self._add_draw(ProtoID.GUI_DRAW_RFRAME_ID, draw_rframe_data)
-    
+
     def _add_draw(self, proto_id: ProtoID, data: bytes):
         self.draw_data.extend(payload_e(proto_id, data))
         self.draw_count += 1
@@ -81,6 +81,8 @@ class Flipper:
         self.running: bool = False
         self.input_callback_func: callable = None
         self.draw_callback_func: callable = None
+        self.connected_callback_func: callable = None
+        self.disconnected_callback_func: callable = None
 
     def open_serial(self, port=None, timeout=1):
         serial_port = port or self._find_port()
@@ -142,27 +144,46 @@ class Flipper:
     def send_draw(self, canvas: Canvas):
         self.send(ProtoID.GUI_DRAW_ID, canvas.compile_draw_data())
 
+    def send_speaker_play(self, frequency: float, volume: float):
+        self.send(ProtoID.SPEAKER_PLAY_ID, float32_e(frequency) + float32_e(volume))
+
+    def send_speaker_stop(self):
+        self.send(ProtoID.SPEAKER_STOP_ID)
+
     def input_callback(self):
         def decorator(func):
             self.input_callback_func = func
             return func
         return decorator
+
+    def connected_callback(self):
+        def decorator(func):
+            self.connected_callback_func = func
+            return func
+        return decorator
     
+    def disconnected_callback(self):
+        def decorator(func):
+            self.disconnected_callback_func = func
+            return func
+        return decorator
+
     def draw_callback(self):
         def decorator(func):
             self.draw_callback_func = func
             return func
         return decorator
-    
+
     def set_input_callback(self, func):
         self.input_callback_func = func
-    
+
     def set_draw_callback(self, func):
         self.draw_callback_func = func
 
     def update_view(self):
         canvas = Canvas()
-        self.draw_callback_func(canvas)
+        if self.draw_callback_func:
+            self.draw_callback_func(canvas)
         self.send_draw(canvas)
 
     def event_loop(self):
@@ -176,7 +197,7 @@ class Flipper:
         try:
             # ignore the header
             out = self.serial.read_until(b">: ").decode("utf-8")
-            
+
             # run the python playground command
             print("starting...")
             self.serial.write(b"python_playground\r\n")
@@ -187,9 +208,11 @@ class Flipper:
                 print("failed to start")
                 sys.exit(0)
 
+            # Wait for flipper to enter the main loop
             time.sleep(0.1)
-            self.update_view()
-
+            if self.connected_callback_func:
+                self.connected_callback_func()
+            
             print("started!")
 
             while self.running:
@@ -198,13 +221,16 @@ class Flipper:
                     break
                 elif id == ProtoID.INPUT_ID:
                     input_data = InputData(data[0], data[1])
-                    self.input_callback_func(input_data)
-        
+                    if self.input_callback_func:
+                        self.input_callback_func(input_data)
+
         except KeyboardInterrupt:
             pass
 
         finally:
             print("stopping...")
+            if self.disconnected_callback_func:
+                self.disconnected_callback_func()
             self.serial.close()
             self.running = False
             print("stopped!")

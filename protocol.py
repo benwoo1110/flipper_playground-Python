@@ -1,3 +1,4 @@
+import struct
 from enum import IntEnum
 
 
@@ -14,6 +15,9 @@ class ProtoID(IntEnum):
     GUI_DRAW_STR_ALIGN_ID = 0x2002
     GUI_DRAW_FRAME_ID = 0x2003
     GUI_DRAW_RFRAME_ID = 0x2004
+
+    SPEAKER_PLAY_ID = 0x3000
+    SPEAKER_STOP_ID = 0x3001
 
 
 def proto_id_e(proto_id: ProtoID) -> bytes:
@@ -40,6 +44,10 @@ def int32_e(data: int) -> bytes:
     if data < 0 or data > 4294967295:
         raise ValueError("int32_to_bytes: data must be 0 <= data <= 4294967295")
     return data.to_bytes(4, "little")
+
+
+def float32_e(data: float) -> bytes:
+    return struct.pack("f", data)
 
 
 def str_e(data: str) -> bytes:
