@@ -1,6 +1,6 @@
 import time
 
-from flipper import Align, Canvas, Flipper, InputData, InputKey, InputType
+from flipper import Align, Canvas, Flipper, InputData, InputKey, InputType, Light
 
 sound = False
 key_name = '?'
@@ -8,7 +8,16 @@ key_type_name = '?'
 
 
 flipper = Flipper()
-flipper.open_serial()
+
+
+@flipper.connected_callback()
+def connected_callback():
+    print("connected_callback")
+
+
+@flipper.disconnected_callback()
+def disconnected_callback():
+    print("disconnected_callback")
 
 
 @flipper.input_callback()
@@ -17,12 +26,14 @@ def input_callback(data: InputData):
 
     start = time.perf_counter_ns()
 
-    if data.key == InputKey.Ok and data.key_type == InputType.Short:
+    if data.key == InputKey.Ok:
         if sound:
             flipper.send_speaker_stop()
+            flipper.send_vibrator_off()
             sound = False
         else:
             flipper.send_speaker_play(554, 0.3)
+            flipper.send_vibrator_on()
             sound = True
 
     key_name = data.key.name
@@ -39,4 +50,5 @@ def draw_callback(canvas: Canvas):
     canvas.draw_rframe(34, 18, 60, 30, 8)
 
 
+flipper.open_serial()
 flipper.event_loop()
