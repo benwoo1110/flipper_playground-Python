@@ -1,6 +1,7 @@
 import time
+import random
 
-from flipper import Align, Canvas, Flipper, InputData, InputKey, InputType, Light
+from flipper_playground import Align, Canvas, Flipper, InputData, InputKey, InputType, Light, ProtoID
 
 sound = False
 key_name = '?'
@@ -10,30 +11,35 @@ key_type_name = '?'
 flipper = Flipper()
 
 
-@flipper.connected_callback()
+@flipper.event_handler(ProtoID.CNT_PYTHON_START_ID)
 def connected_callback():
     print("connected_callback")
+    flipper.update_view()
 
 
-@flipper.disconnected_callback()
+@flipper.event_handler(ProtoID.CNT_PYTHON_STOP_ID)
 def disconnected_callback():
     print("disconnected_callback")
 
 
-@flipper.input_callback()
+@flipper.input_event()
 def input_callback(data: InputData):
     global sound, key_name, key_type_name
 
     start = time.perf_counter_ns()
 
-    if data.key == InputKey.Ok:
+    if data.key == InputKey.Ok and data.key_type == InputType.Short:
         if sound:
             flipper.send_speaker_stop()
             flipper.send_vibrator_off()
+            flipper.send_light_set(Light.Red | Light.Green | Light.Blue, 0x00)
             sound = False
         else:
             flipper.send_speaker_play(554, 0.3)
-            flipper.send_vibrator_on()
+            #flipper.send_vibrator_on()
+            flipper.send_light_set(Light.Green, random.randint(0, 0xFF))
+            flipper.send_light_set(Light.Red, random.randint(0, 0xFF))
+            flipper.send_light_set(Light.Blue, random.randint(0, 0xFF))
             sound = True
 
     key_name = data.key.name

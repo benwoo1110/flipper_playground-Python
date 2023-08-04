@@ -1,28 +1,6 @@
 import struct
-from enum import IntEnum
 
-
-class ProtoID(IntEnum):
-    CNT_FLIPPER_START_ID = 0x0001
-    CNT_PYTHON_START_ID = 0x0002
-    CNT_FLIPPER_STOP_ID = 0xFFF1
-    CNT_PYTHON_STOP_ID = 0xFFF2
-
-    INPUT_ID = 0x1001
-
-    GUI_DRAW_ID = 0x2000
-    GUI_DRAW_STR_ID = 0x2001
-    GUI_DRAW_STR_ALIGN_ID = 0x2002
-    GUI_DRAW_FRAME_ID = 0x2003
-    GUI_DRAW_RFRAME_ID = 0x2004
-
-    HW_SPEAKER_PLAY_ID = 0x3000
-    HW_SPEAKER_STOP_ID = 0x3001
-    HW_SPEAKER_SET_VOLUME_ID = 0x3002
-    HW_VIBRATOR_ON_ID = 0x3003
-    HW_VIBRATOR_OFF_ID = 0x3004
-    HW_LIGHT_SET_ID = 0x3005
-    HW_LIGHT_SEQUENCE_ID = 0x3006
+from .protocols import ProtoID
 
 
 def proto_id_e(proto_id: ProtoID) -> bytes:
