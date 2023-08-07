@@ -1,7 +1,8 @@
 import time
 import random
 
-from flipper_playground import Align, Canvas, Flipper, InputData, InputKey, InputType, Light, ProtoID
+from flipper_playground import Flipper, InputData, InputKey, InputType, Light, Canvas, Align
+
 
 sound = False
 key_name = '?'
@@ -11,13 +12,13 @@ key_type_name = '?'
 flipper = Flipper()
 
 
-@flipper.event_handler(ProtoID.CNT_PYTHON_START_ID)
+@flipper.start_event()
 def connected_callback():
     print("connected_callback")
     flipper.update_view()
 
 
-@flipper.event_handler(ProtoID.CNT_PYTHON_STOP_ID)
+@flipper.stop_event()
 def disconnected_callback():
     print("disconnected_callback")
 
@@ -36,7 +37,7 @@ def input_callback(data: InputData):
             sound = False
         else:
             flipper.send_speaker_play(554, 0.3)
-            #flipper.send_vibrator_on()
+            flipper.send_vibrator_on()
             flipper.send_light_set(Light.Green, random.randint(0, 0xFF))
             flipper.send_light_set(Light.Red, random.randint(0, 0xFF))
             flipper.send_light_set(Light.Blue, random.randint(0, 0xFF))

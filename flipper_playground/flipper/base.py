@@ -9,7 +9,7 @@ from serial.tools import list_ports
 from .draw import FlipperDraw
 from .input import FlipperInput
 from .hardware import FlipperHardware
-from ..protocol.protocols import ProtoID, ProtoInterface, ProtoParser, ProtoEventManager
+from ..protocol.protocols import ProtoID, ProtoParser, ProtoEventManager
 from ..protocol.proto_utils import payload_e
 
 
@@ -78,6 +78,21 @@ class Flipper(
     def send(self, id: ProtoID, data: bytes = b''):
         self.serial.write(payload_e(id, data))
 
+    def send_close(self):
+        self.send(ProtoID.CNT_PYTHON_STOP_ID)
+
+    def start_event(self):
+        def decorator(func):
+            self.add_event_handler(ProtoID.CNT_FLIPPER_START_ID, func)
+            return func
+        return decorator
+    
+    def stop_event(self):
+        def decorator(func):
+            self.add_event_handler(ProtoID.CNT_FLIPPER_STOP_ID, func)
+            return func
+        return decorator
+
     def event_loop(self):
         if self.running:
             # error
@@ -102,7 +117,7 @@ class Flipper(
 
             # Wait for flipper to enter the main loop
             time.sleep(0.1)
-            self.handle_event(ProtoID.CNT_PYTHON_START_ID)
+            self.handle_event(id, data)
 
             print("started!")
 
@@ -110,16 +125,15 @@ class Flipper(
                 id, data = self.receive()
                 if id is None:
                     continue
+                self.handle_event(id, data)
                 if id == ProtoID.CNT_FLIPPER_STOP_ID:
                     break
-                self.handle_event(id, data)
 
         except KeyboardInterrupt:
             pass
 
         finally:
             print("stopping...")
-            self.handle_event(ProtoID.CNT_PYTHON_STOP_ID)
             self.serial.close()
             self.running = False
             print("stopped!")

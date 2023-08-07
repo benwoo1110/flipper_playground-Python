@@ -15,9 +15,6 @@ class FlipperHardware(ProtoInterface):
     def __init__(self) -> None:
         super().__init__()
 
-    def send_close(self):
-        self.send(ProtoID.CNT_PYTHON_STOP_ID)
-
     def send_speaker_play(self, frequency: float, volume: float):
         self.send(ProtoID.HW_SPEAKER_PLAY_ID, float32_e(frequency) + float32_e(volume))
 
