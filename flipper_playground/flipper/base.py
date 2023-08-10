@@ -25,7 +25,7 @@ class Flipper(
         self.running: bool = False
         super().__init__()
 
-    def open_serial(self, port=None, timeout=1):
+    def open_serial(self, port=None, timeout=2):
         serial_port = port or self._find_port()
 
         if serial_port is None:
@@ -37,7 +37,7 @@ class Flipper(
             sys.exit(0)
 
         # open serial port
-        self.serial = Serial(serial_port, timeout=1)
+        self.serial = Serial(serial_port, timeout=2)
         self.serial.baudrate = 230400
         self.serial.flushOutput()
         self.serial.flushInput()
@@ -56,12 +56,14 @@ class Flipper(
 
     def receive(self) -> (ProtoID, bytes):
         id_raw = self.serial.read(2)
+        #print(f"id_raw: {id_raw}")
         if len(id_raw) != 2:
             return None, None
         
         id = int.from_bytes(id_raw, "little")
 
         data_size_raw = self.serial.read(4)
+        #print(f"data_size_raw: {data_size_raw}")
         if len(data_size_raw) != 4:
             return None, None
         
@@ -76,6 +78,7 @@ class Flipper(
         return id, self.parse_bytes(id, data)
 
     def send(self, id: ProtoID, data: bytes = b''):
+        print(f"send: {id}, {data}")
         self.serial.write(payload_e(id, data))
 
     def send_close(self):

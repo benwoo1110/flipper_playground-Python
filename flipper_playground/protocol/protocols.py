@@ -14,6 +14,8 @@ class ProtoID(IntEnum):
     GUI_DRAW_STR_ALIGN_ID = 0x2002
     GUI_DRAW_FRAME_ID = 0x2003
     GUI_DRAW_RFRAME_ID = 0x2004
+    GUI_DRAW_ICON_ID = 0x2005
+    GUI_ICON_ADD_ID = 0x2101
 
     HW_SPEAKER_PLAY_ID = 0x3000
     HW_SPEAKER_STOP_ID = 0x3001
@@ -22,6 +24,7 @@ class ProtoID(IntEnum):
     HW_VIBRATOR_OFF_ID = 0x3004
     HW_LIGHT_SET_ID = 0x3005
     HW_LIGHT_SEQUENCE_ID = 0x3006
+
 
 class DataHandler:
     @classmethod
@@ -56,6 +59,7 @@ class ProtoParser:
             print("Unknown proto id: " + str(id))
             return data
 
+
 class ProtoEventManager:
     def __init__(self):
         print("1")
@@ -74,6 +78,7 @@ class ProtoEventManager:
         self.event_handlers[proto_id].append(handler)
 
     def handle_event(self, id: ProtoID, data: object=None):
+        print(f"Handling event: {id}")
         if id in self.event_handlers:
             for handler in self.event_handlers[id]:
                 if data is None: handler()

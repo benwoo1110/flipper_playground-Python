@@ -37,5 +37,9 @@ def str_e(data: str) -> bytes:
     return int32_e(len(data)) + data.encode("utf-8")
 
 
+def bytes_e(data: bytes) -> bytes:
+    return int32_e(len(data)) + data
+
+
 def payload_e(id: ProtoID, data: bytes) -> bytes:
     return proto_id_e(id) + data_size_e(data) + data
