@@ -20,6 +20,21 @@ class CanvasDirection(IntEnum):
     BottomToTop = 3
 
 
+class Color(IntEnum):
+    White = 0x00
+    Black = 0x01
+    XOR = 0x02
+
+
+class Font(IntEnum):
+    Primary = 0
+    Secondary = 1
+    Keyboard = 2
+    BigNumbers = 3
+    BatteryPercent = 4
+    TotalNumber = 5
+
+
 class Canvas:
     def __init__(self) -> None:
         self.draw_count = 0
@@ -79,6 +94,21 @@ class Canvas:
     def draw_rbox(self, x, y, width, height, radius):
         draw_rbox_data = int8_e(x) + int8_e(y) + int8_e(width) + int8_e(height) + int8_e(radius)
         self._add_draw(ProtoID.GUI_DRAW_RBOX_ID, draw_rbox_data)
+
+    def set_color(self, color: Color):
+        set_color_data = int8_e(color)
+        self._add_draw(ProtoID.GUI_SET_COLOR_ID, set_color_data)
+    
+    def set_color_inverted(self):
+        self._add_draw(ProtoID.GUI_SET_COLOR_INVERTED_ID, b'')
+    
+    def set_font(self, font: Font):
+        set_font_data = int8_e(font)
+        self._add_draw(ProtoID.GUI_SET_FONT_ID, set_font_data)
+
+    def set_font_direction(self, direction: CanvasDirection):
+        set_font_direction_data = int8_e(direction)
+        self._add_draw(ProtoID.GUI_SET_FONT_DIRECTION_ID, set_font_direction_data)
 
     def _add_draw(self, proto_id: ProtoID, data: bytes):
         self.draw_data.extend(payload_e(proto_id, data))
