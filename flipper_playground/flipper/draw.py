@@ -13,6 +13,13 @@ class Align(IntEnum):
     Center = 4
 
 
+class CanvasDirection(IntEnum):
+    LeftToRight = 0
+    TopToBottom = 1
+    RightToLeft = 2
+    BottomToTop = 3
+
+
 class Canvas:
     def __init__(self) -> None:
         self.draw_count = 0
@@ -40,6 +47,38 @@ class Canvas:
     def draw_icon(self, x, y, icon_id):
         draw_icon_data = int8_e(x) + int8_e(y) + int8_e(icon_id)
         self._add_draw(ProtoID.GUI_DRAW_ICON_ID, draw_icon_data)
+
+    def draw_dot(self, x, y):
+        draw_dot_data = int8_e(x) + int8_e(y)
+        self._add_draw(ProtoID.GUI_DRAW_DOT_ID, draw_dot_data)
+    
+    def draw_line(self, x1, y1, x2, y2):
+        draw_line_data = int8_e(x1) + int8_e(y1) + int8_e(x2) + int8_e(y2)
+        self._add_draw(ProtoID.GUI_DRAW_LINE_ID, draw_line_data)
+    
+    def draw_circle(self, x, y, radius):
+        draw_circle_data = int8_e(x) + int8_e(y) + int8_e(radius)
+        self._add_draw(ProtoID.GUI_DRAW_CIRCLE_ID, draw_circle_data)
+    
+    def draw_disc(self, x, y, radius):
+        draw_disc_data = int8_e(x) + int8_e(y) + int8_e(radius)
+        self._add_draw(ProtoID.GUI_DRAW_DISC_ID, draw_disc_data)
+    
+    def draw_triangle(self, x, y, base, height, direction):
+        draw_triangle_data = int8_e(x) + int8_e(y) + int8_e(base) + int8_e(height) + int8_e(direction)
+        self._add_draw(ProtoID.GUI_DRAW_TRIANGLE_ID, draw_triangle_data)
+
+    def draw_glyph(self, x, y, glyph_char):
+        draw_glyph_data = int8_e(x) + int8_e(y) + int16_e(glyph_char)
+        self._add_draw(ProtoID.GUI_DRAW_GLYPH_ID, draw_glyph_data)
+
+    def draw_box(self, x, y, width, height):
+        draw_box_data = int8_e(x) + int8_e(y) + int8_e(width) + int8_e(height)
+        self._add_draw(ProtoID.GUI_DRAW_BOX_ID, draw_box_data)
+
+    def draw_rbox(self, x, y, width, height, radius):
+        draw_rbox_data = int8_e(x) + int8_e(y) + int8_e(width) + int8_e(height) + int8_e(radius)
+        self._add_draw(ProtoID.GUI_DRAW_RBOX_ID, draw_rbox_data)
 
     def _add_draw(self, proto_id: ProtoID, data: bytes):
         self.draw_data.extend(payload_e(proto_id, data))
