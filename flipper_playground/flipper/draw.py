@@ -51,6 +51,9 @@ class Canvas:
         draw_str_align_data = int8_e(x) + int8_e(y) + int8_e(horizontal) + int8_e(vertical) + str_e(msg)
         self._add_draw(ProtoID.GUI_DRAW_STR_ALIGN_ID, draw_str_align_data)
 
+    def draw_str_align_center(self, x: int, y: int, msg: str):
+        self.draw_str_align(x, y, Align.Center, Align.Center, msg)
+
     def draw_frame(self, x, y, width, height):
         draw_frame_data = int8_e(x) + int8_e(y) + int8_e(width) + int8_e(height)
         self._add_draw(ProtoID.GUI_DRAW_FRAME_ID, draw_frame_data)
